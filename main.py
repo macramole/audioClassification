@@ -82,16 +82,19 @@ model.add(Activation('softmax'))
 rms = RMSprop()
 model.compile(loss='categorical_crossentropy', optimizer=rms, metrics=['accuracy'])
 
-epochs = 10000
+epochs = 15000
 batch_size = 100
 
 history = model.fit(X_train, y_train, epochs = epochs, batch_size = batch_size, validation_data=(X_test, y_test) )
 
-plt.title("Feedforward Model 500->Drop(0.4)->300->Drop(0.4)")
+plt.title("Feedforward Model")
 plt.plot(history.history["loss"], label="Loss function")
 plt.plot(history.history["acc"], label="Training Accuracy")
 plt.plot(history.history["val_acc"], label="Test Accuracy")
 plt.legend()
+
+scores = model.evaluate( X_test, y_test )
+print("Accuracy:", scores[1])
 
 #%% LSTM Model
 
@@ -105,24 +108,74 @@ from keras.layers import Input
 matrixAudioDataReshaped = matrixAudioData.reshape((1500, 26, 20))
 
 cantTrain = int( np.round( len(audioFiles) * 0.7 ) )
-X_train = matrixAudioDataReshaped[0:cantTrain,]
-X_test = matrixAudioDataReshaped[cantTrain:,]
-y_train = to_categorical( labels[0:cantTrain] )
-y_test = to_categorical( labels[cantTrain:] )
+X_train_RNN = matrixAudioDataReshaped[0:cantTrain,]
+X_test_RNN = matrixAudioDataReshaped[cantTrain:,]
+y_train_RNN = to_categorical( labels[0:cantTrain] )
+y_test_RNN = to_categorical( labels[cantTrain:] )
 
 modelLSTM = Sequential()
-modelLSTM.add( LSTM(500, input_shape = (26, 20) ) )
+modelLSTM.add( LSTM(500, input_shape = (26, 20), dropout=0.4, recurrent_dropout=0.3, return_sequences=True ) )
+#modelLSTM.add(Dropout(0.4))
+modelLSTM.add( LSTM(300, dropout=0.4) )
+#modelLSTM.add(Dropout(0.4))
 modelLSTM.add(Dense(10))
 modelLSTM.add(Activation('softmax'))
 
-rms = RMSprop()
-modelLSTM.compile(loss='categorical_crossentropy', optimizer=rms, metrics=['accuracy'])
+modelLSTM.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 modelLSTM.summary()
 
-epochs = 40 #10000
+epochs = 50 #10000
 batch_size = 100
 
-modelLSTM.fit(X_train, y_train, epochs = epochs, batch_size = batch_size, validation_data=(X_test, y_test))
+modelLSTM.fit(X_train_RNN, y_train_RNN, epochs = epochs, batch_size = batch_size, 
+              validation_data=(X_test_RNN, y_test_RNN))
 
-scores = modelLSTM.evaluate( X_test, y_test )
+plt.title("LSTM Model")
+plt.plot(history.history["loss"], label="Loss function")
+plt.plot(history.history["acc"], label="Training Accuracy")
+plt.plot(history.history["val_acc"], label="Test Accuracy")
+plt.legend()
+
+scores = modelLSTM.evaluate( X_test_RNN, y_test_RNN )
+print("Accuracy:", scores[1])
+
+#%% Conv2D
+
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Conv2D, MaxPooling2D
+
+matrixAudioDataConv2D = matrixAudioData.reshape((1500, 26, 20, 1))
+X_train_Conv2D = matrixAudioDataConv2D[0:cantTrain,]
+X_test_Conv2D = matrixAudioDataConv2D[cantTrain:,]
+y_train_Conv2D = to_categorical( labels[0:cantTrain] )
+y_test_Conv2D = to_categorical( labels[cantTrain:] )
+
+modelConv2D = Sequential()
+modelConv2D.add( Conv2D(32, (3,3), input_shape= (26,20,1) ) )
+modelConv2D.add( Activation("relu") )
+modelConv2D.add(Conv2D(32, (3, 3)))
+modelConv2D.add(Activation('relu'))
+modelConv2D.add(MaxPooling2D(pool_size=(2, 2)))
+modelConv2D.add(Dropout(0.25))
+
+modelConv2D.add(Flatten())
+modelConv2D.add(Dense(10))
+modelConv2D.add(Activation('softmax'))
+
+modelConv2D.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+epochs = 200
+batch_size = 128
+
+history = modelConv2D.fit(X_train_Conv2D, y_train_Conv2D, epochs = epochs, batch_size = batch_size, 
+              validation_data=(X_test_Conv2D, y_test_Conv2D))
+
+plt.title("Conv2D Model")
+plt.plot(history.history["loss"], label="Loss function")
+plt.plot(history.history["acc"], label="Training Accuracy")
+plt.plot(history.history["val_acc"], label="Test Accuracy")
+plt.legend()
+
+scores = modelConv2D.evaluate( X_test_Conv2D, y_test_Conv2D )
+print("Accuracy:", scores[1])
