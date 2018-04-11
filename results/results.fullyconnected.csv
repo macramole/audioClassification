@@ -1,0 +1,11 @@
+Fecha,Dataset,Neuronas Capa 1,Neuronas Capa 2,Neuronas Capa 3,Dropout,optimizer,batch_size,epochs,tiempoPromedio,auc1,auc2,auc3
+0,england-vs-all,500,300,0,0.2,adam,512,20,399.370226,0.5,0.5,0.5
+0,england-vs-all,500,300,0,0.2,adam,512,40,397.66268,0.5,0.5,0.5
+0,england-vs-all,500,300,0,0.2,adam,512,60,399.180249,0.5,0.5,0.5
+0,england-vs-all,500,300,0,0.2,adam,512,80,401.492716,0.5,0.5,0.5
+0,england-vs-all,500,300,0,0.2,adam,512,5000,99541.790174,0.5,0.5,0.5
+0,england-vs-all,500,300,0,0.2,adam,512,10000,99456.04458,0.5,0.5,0.5
+0,england-vs-all,500,300,0,0.2,adam,512,15000,99374.633749,0.5,0.5,0.5
+0,england-vs-all,500,300,0,0.2,adam,512,20000,99272.973814,0.5,0.5,0.5
+0,england-vs-all,500,300,0,0.2,adam,512,25000,99382.371253,0.5,0.5,0.5
+0,england-vs-all,500,300,0,0.2,adam,512,30000,99567.646705,0.5,0.5,0.5

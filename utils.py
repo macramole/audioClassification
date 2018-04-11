@@ -48,9 +48,9 @@ def getSTFT(data, superVector = True):
     D = np.abs(D)
 
     if superVector:
-        return D.reshape( mfcc.shape[0] * mfcc.shape[1] )
+        return D.reshape( D.shape[0] * D.shape[1] )
     else:
-        return D.reshape( (mfcc.shape[1], mfcc.shape[0] ) )
+        return D.reshape( (D.shape[1], D.shape[0] ) )
 
 SIZE_ZERO_CROSSING_RATE = 22 #esto seguramente se pueda calcular pero bue
 def getZeroCrossingRate(data):
@@ -103,6 +103,27 @@ def scaleByRow(data):
 def unScale(scaledData, min, max):
     return ( scaledData  * ( max - min) ) + min
 
+def getDurations( audioFiles ):
+    durations = []
+    
+    count = 0
+    COUNT_NOTICE = 200
+    
+    for f in audioFiles:
+        sys.stdout.write('.')
+        sys.stdout.flush()
+        
+        durations.append( librosa.core.get_duration(filename=f) )
+        
+        count += 1
+
+        if count % COUNT_NOTICE == 0:
+            sys.stdout.write('\n\r')
+            print("[", count, "/", len(audioFiles), "]")
+            sys.stdout.flush()
+
+    return durations
+
 def getAudioData( audioFiles, superVector = True, features = "mfcc", qtyFilesToProcess = None ):
     count = 0
     countFail = 0
@@ -133,7 +154,7 @@ def getAudioData( audioFiles, superVector = True, features = "mfcc", qtyFilesToP
             if features == "mfcc":
                 featuresData = getMFCC(tmpAudioData, superVector)
             elif features == "stft":
-                featuresData = doSTFT(tmpAudioData)
+                featuresData = getSTFT(tmpAudioData, superVector)
 
             listAudioData.append( featuresData )
             audioFilesDone.append(file)

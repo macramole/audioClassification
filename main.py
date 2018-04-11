@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-DATASET_DIR = "recordings/"
+DATASET_DIR = "recordings.numbers/"
 
 audioFiles = []
 
@@ -32,6 +32,8 @@ audioFiles = utils.findMusic( DATASET_DIR, "wav" )
 np.random.shuffle(audioFiles)
 
 labels = [ int( af[ len(DATASET_DIR)] ) for af in audioFiles ]
+labels = np.array( np.array(labels) == 4, dtype=int )
+labels = labels.reshape( labels.shape[0], 1 )
 
 matrixAudioData = utils.getAudioData( audioFiles )
 #matrixAudioData = utils.scaleByRow(matrixAudioData) hacer esto empeora mucho no se por que
@@ -39,8 +41,10 @@ matrixAudioData = utils.getAudioData( audioFiles )
 cantTrain = int( np.round( len(audioFiles) * 0.7 ) )
 X_train = matrixAudioData[0:cantTrain,]
 X_test = matrixAudioData[cantTrain:,]
-y_train = to_categorical( labels[0:cantTrain] )
-y_test = to_categorical( labels[cantTrain:] )
+#y_train = to_categorical( labels[0:cantTrain] )
+#y_test = to_categorical( labels[cantTrain:] )
+y_train = labels[0:cantTrain]
+y_test = labels[cantTrain:]
 
 #%% Check
 from librosa.display import specshow
@@ -76,13 +80,16 @@ model.add(Dropout(0.4))
 model.add(Dense(300))
 model.add(Activation('relu'))
 model.add(Dropout(0.4))
-model.add(Dense(10))
-model.add(Activation('softmax'))
+#model.add(Dense(10))
+model.add(Dense(1))
+model.add(Activation('sigmoid'))
 
 rms = RMSprop()
-model.compile(loss='categorical_crossentropy', optimizer=rms, metrics=['accuracy'])
+#model.compile(loss='categorical_crossentropy', optimizer=rms, metrics=['accuracy'])
+model.compile(loss='binary_crossentropy', optimizer=rms, metrics=['accuracy'])
 
-epochs = 15000
+#epochs = 15000
+epochs = 1000
 batch_size = 100
 
 history = model.fit(X_train, y_train, epochs = epochs, batch_size = batch_size, validation_data=(X_test, y_test) )
