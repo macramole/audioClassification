@@ -72,9 +72,9 @@ epochsMax = 300
 #lrs = [0.001, 0.01, 0.1, 0.5]
 #dropouts = [0.4,0.6,0.8]
 #unitss = [ 32, 64, 256, 512]
-lrs = [0.0001, 0.0005, 0.00001]
-dropouts = [0.1, 0.2, 0.4]
-unitss = [ 16, 32, 64 ]
+lrs = [0.00001]
+dropouts = [0.4]
+unitss = [ 32, 64 ]
 
 for units in unitss:
     for lr in lrs:
@@ -98,10 +98,13 @@ for units in unitss:
                 model.add( Activation("relu") )
                 model.add(Dropout(dropout))
                 
+                model.add(MaxPooling2D(pool_size=(4, 2)))
+                model.add(MaxPooling2D(pool_size=(4, 2)))
+                model.add(MaxPooling2D(pool_size=(4, 2)))
                 model.add(MaxPooling2D(pool_size=(2, 2)))
                 
-                model.add(Conv2D( int(units/2) , (3, 3)))
-                model.add(Activation('relu'))
+#                model.add(Conv2D( int(units/2) , (3, 3)))
+#                model.add(Activation('relu'))
                 
                 
                 model.add(Flatten())
@@ -110,7 +113,7 @@ for units in unitss:
                 
                 adam = Adam(lr=lr)
                 model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
-            
+#                model.summary()
                    
                 ##############################
                 ##############################
