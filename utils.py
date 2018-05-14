@@ -42,7 +42,6 @@ def findMusic(directory, fileType):
 
     return musicFiles
 
-SIZE_STFT = 45100 #esto seguramente se pueda calcular pero bue
 def getSTFT(data, superVector = True):
     D = librosa.stft(data)
     D = np.abs(D)
@@ -51,18 +50,25 @@ def getSTFT(data, superVector = True):
         return D.reshape( D.shape[0] * D.shape[1] )
     else:
         return D.reshape( (D.shape[1], D.shape[0] ) )
+    
+def getMelspectrogram(data, superVector = True):
+    D = librosa.feature.melspectrogram(data)
+#    D = np.abs(D)
 
-SIZE_ZERO_CROSSING_RATE = 22 #esto seguramente se pueda calcular pero bue
+    if superVector:
+        return D.reshape( D.shape[0] * D.shape[1] )
+    else:
+#        return D.reshape( (D.shape[1], D.shape[0] ) )
+        return D
+
 def getZeroCrossingRate(data):
     zc = librosa.feature.zero_crossing_rate(data)
     return zc.reshape( zc.shape[0] * zc.shape[1] )
 
-SIZE_RMSE = 22 #esto seguramente se pueda calcular pero bue
 def getRMSE(data):
     rmse = librosa.feature.rmse(data)
     return rmse.reshape( rmse.shape[0] * rmse.shape[1] )
 
-SIZE_MFCC = 440 #esto seguramente se pueda calcular pero bue
 def getMFCC(data, superVector = True):
     mfcc = librosa.feature.mfcc(data, sr = SAMPLE_RATE)
     if superVector:
@@ -155,6 +161,11 @@ def getAudioData( audioFiles, superVector = True, features = "mfcc", qtyFilesToP
                 featuresData = getMFCC(tmpAudioData, superVector)
             elif features == "stft":
                 featuresData = getSTFT(tmpAudioData, superVector)
+            elif features == "melspectrogram":
+                featuresData = getMelspectrogram(tmpAudioData, superVector)
+            else:
+                print("Utils:getAudioData - No feature chosen")
+                return None
 
             listAudioData.append( featuresData )
             audioFilesDone.append(file)
