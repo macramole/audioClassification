@@ -31,3 +31,13 @@ data = [
     go.Scatter( x = df["aucMean"], y = df["units"], mode = "markers" )
 ]
 plot(data)
+
+
+#%% modificacion
+
+df["secondLayer"] = df["secondLayer"].astype(int) + 1
+df = df.rename( columns = { "secondLayer" : "# layers" } )
+
+df.to_csv("results/results.conv.csv", index = False)
+
+

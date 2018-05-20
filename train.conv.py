@@ -42,9 +42,10 @@ utils.setSegundosFila(3)
 
 #np.save( "audioDataMelspectogram", dfAudio )
 #dfAudio = np.load("audioData.npy")
-dfAudio = np.load("audioDataMelspectogram.npy")
-#dfAudio = dfAudio.reshape( (dfAudio.shape[0], 130, 20, 1) ) #esto es especifico de 3 segundos
-dfAudio = dfAudio.reshape( (dfAudio.shape[0], dfAudio.shape[1], dfAudio.shape[2], 1) )
+#dfAudio = np.load("audioDataMelspectogram.npy")
+dfAudio = np.load("/home/leandro/Data/common-voice-for-classification/audioData.npy")
+dfAudio = dfAudio.reshape( (dfAudio.shape[0], 130, 20, 1) ) #esto es especifico de 3 segundos
+#dfAudio = dfAudio.reshape( (dfAudio.shape[0], dfAudio.shape[1], dfAudio.shape[2], 1) )
 
 
 #%%
@@ -83,20 +84,17 @@ for i in range(0, len(seeds)):
     } )
 
 
-epochsStep = 50
-epochsMax = 300
+epochsStep = 25
+epochsMax = 400
 #epochsStep = 1
 #epochsMax = 1
 
-#lrs = [0.001, 0.01, 0.1, 0.5]
-#dropouts = [0.4,0.6,0.8]
-#unitss = [ 32, 64, 256, 512]
-lrs = [0.0001, 0.00001]
-dropouts = [0.4]
-unitss = [ 32, 64 ]
-secondLayers = [ False, True ]
+lrs = [0.00001]
+dropouts = [0.4, 0.5]
+unitss = [ 256, 512 ]
+layerss = [ 3,4 ]
 
-for secondLayer in secondLayers:
+for layers in layerss:
     for units in unitss:
         for lr in lrs:
             for dropout in dropouts:
@@ -115,17 +113,19 @@ for secondLayer in secondLayers:
                     ###############################
                     
                     model = Sequential()
-                    model.add( Conv2D(units, (3,3), input_shape= dfAudio.shape[1:] ) )
-                    model.add( Activation("relu") )
-                    model.add(Dropout(dropout))
                     
-                    if secondLayer:
-                        model.add(MaxPooling2D(pool_size=(2, 2)))
-                        model.add(Conv2D( int(units/2) , (3, 3)))
-                        model.add(Activation('relu'))
-                        model.add(MaxPooling2D(pool_size=(2, 2)))
-                    else:
-                        model.add(MaxPooling2D(pool_size=(2, 2)))
+                    print(dfAudio.shape)
+                    
+                    for l in range(layers):
+                        if l == 0:
+                            model.add( Conv2D(units, (3,3), input_shape= dfAudio.shape[1:], activation="relu" ) )
+                        else:
+                            model.add(Conv2D( int(units/( 2 ** l ) ) , (3, 3), activation="relu" ))
+                            
+                        model.add(Dropout(dropout))
+                        
+                        if l < layers - 1:
+                            model.add(MaxPooling2D(pool_size=(2, 2)))
                     
                     model.add(Flatten())
                     model.add(Dense(1))
@@ -182,4 +182,4 @@ for secondLayer in secondLayers:
                         
                         currentEpochs += epochsStep
                         
-                        resultFile.write( "%s,%s,%s,%f,%d,%s,%f,%d,%f,%s\n" % (now,DATASET_NAME,"melspectogram poolsize(2-2)",lr,units,secondLayer,dropout,currentEpochs,tiempoPromedio,strAucs) )
+                        resultFile.write( "%s,%s,%s,%f,%d,%s,%f,%d,%f,%s\n" % (now,DATASET_NAME,"",lr,units,layers,dropout,currentEpochs,tiempoPromedio,strAucs) )
